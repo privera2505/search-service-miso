@@ -18,7 +18,7 @@ def repo_dep() -> SearchRepositoryPort:
     return repo_instance
 
 
-app = FastAPI(title="Posts API")
+app = FastAPI(title="Search Service API")
 
 @app.get("/api/search_rooms")
 def buscar_habitacion(
