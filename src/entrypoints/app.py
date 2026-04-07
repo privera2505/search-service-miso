@@ -7,7 +7,8 @@ from domain.ports.search_repository_port import SearchRepositoryPort
 from entrypoints.assembly import build_search_repository
 
 from error import (
-    InvalidDateRangeException
+    InvalidDateRangeException,
+    BookingDateValidationException
     )
 
 
@@ -26,15 +27,18 @@ def buscar_habitacion(
     checkin: date,
     checkout: date,
     group: int,
-    rooms: int
+    rooms: int,
+    repo: SearchRepositoryPort = Depends(repo_dep)
 ):
+    today = date.today()
     try:
+        if checkin<today:
+            raise BookingDateValidationException()
         if checkin>=checkout:
             raise InvalidDateRangeException()
-        print(ciudad)
-        print(checkin)
-        print(checkout)
-        print(group)
-        print(rooms)
+        query = repo.search_hotels(ciudad,checkin,checkout,group,rooms)
+        return query
     except InvalidDateRangeException:
         raise HTTPException(400, "the check-in date is later than the check-out date")
+    except BookingDateValidationException:
+        raise HTTPException(400, "the check-in date is lower than today")

@@ -312,8 +312,8 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         for habitacion in habitaciones:
             ocupada = any(
                 reserva["habitacionId"] == habitacion["id"] and not (
-                    checkout <= reserva["fechaCheckIn"]
-                    or checkin >= reserva["fechaCheckOut"]
+                    checkout <= reserva["fechaCheckIn"].date()
+                    or checkin >= reserva["fechaCheckOut"].date()
                 )
                 for reserva in self._reserva.values()
             )
