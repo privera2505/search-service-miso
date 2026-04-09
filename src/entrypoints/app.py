@@ -31,7 +31,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-@app.get("/api/search_rooms")
+@app.get("/search/search_rooms")
 def buscar_habitacion(
     ciudad: str,
     checkin: date,
@@ -52,3 +52,7 @@ def buscar_habitacion(
         raise HTTPException(400, "the check-in date is later than the check-out date")
     except BookingDateValidationException:
         raise HTTPException(400, "the check-in date is lower than today")
+
+@app.get("/search/ping")
+def healthcheck():
+    return "pong"
