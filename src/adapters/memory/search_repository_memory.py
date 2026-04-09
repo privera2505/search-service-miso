@@ -1,7 +1,8 @@
 from datetime import date, datetime
+from math import ceil
 from typing import Dict
 
-from domain.models.models import Reserva, Habitacion, Hotel, HabitacionesDisponibles
+from domain.models.models import Reserva, Habitacion, Hotel, HabitacionesDisponibles, Tarifa, Resena
 from domain.ports.search_repository_port import SearchRepositoryPort
 
 
@@ -10,19 +11,21 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         self._hotel: Dict[str, Hotel] = {
             "11111111-1111-1111-1111-000000000001": {
                 "id": "11111111-1111-1111-1111-000000000001",
-                "nombre": "Grand Prague Hotel",
+                "nombre": "Hotel 1",
                 "direccion": "Calle 123",
-                "ciudad": "Prague",
-                "pais": "Czech Republic",
+                "ciudad": "Madrid",
+                "pais": "Spain",
                 "latitud": 50.0755,
                 "longitud": 14.4378,
                 "estrellas": 5,
                 "pmsProveedor": "Opera",
-                "activo": True
+                "activo": True,
+                "distancia": "3 km del centro",
+                "acceso": "Metro"
             },
             "11111111-1111-1111-1111-000000000002": {
                 "id": "11111111-1111-1111-1111-000000000002",
-                "nombre": "Madrid Central Hotel",
+                "nombre": "Hotel 2",
                 "direccion": "Gran Via 45",
                 "ciudad": "Madrid",
                 "pais": "Spain",
@@ -30,115 +33,9 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
                 "longitud": -3.7038,
                 "estrellas": 4,
                 "pmsProveedor": "Fidelio",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000003": {
-                "id": "11111111-1111-1111-1111-000000000003",
-                "nombre": "Paris Boutique Stay",
-                "direccion": "Rue Rivoli",
-                "ciudad": "Paris",
-                "pais": "France",
-                "latitud": 48.8566,
-                "longitud": 2.3522,
-                "estrellas": 5,
-                "pmsProveedor": "Opera",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000004": {
-                "id": "11111111-1111-1111-1111-000000000004",
-                "nombre": "Berlin Comfort Inn",
-                "direccion": "Alexanderplatz",
-                "ciudad": "Berlin",
-                "pais": "Germany",
-                "latitud": 52.52,
-                "longitud": 13.405,
-                "estrellas": 3,
-                "pmsProveedor": "Cloudbeds",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000005": {
-                "id": "11111111-1111-1111-1111-000000000005",
-                "nombre": "Rome Luxury Suites",
-                "direccion": "Via Veneto",
-                "ciudad": "Rome",
-                "pais": "Italy",
-                "latitud": 41.9028,
-                "longitud": 12.4964,
-                "estrellas": 5,
-                "pmsProveedor": "Opera",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000006": {
-                "id": "11111111-1111-1111-1111-000000000006",
-                "nombre": "Lisbon Sea View",
-                "direccion": "Av Atlantica",
-                "ciudad": "Lisbon",
-                "pais": "Portugal",
-                "latitud": 38.7223,
-                "longitud": -9.1393,
-                "estrellas": 4,
-                "pmsProveedor": "Fidelio",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000007": {
-                "id": "11111111-1111-1111-1111-000000000007",
-                "nombre": "Amsterdam Canal Hotel",
-                "direccion": "Canal St",
-                "ciudad": "Amsterdam",
-                "pais": "Netherlands",
-                "latitud": 52.3676,
-                "longitud": 4.9041,
-                "estrellas": 4,
-                "pmsProveedor": "Cloudbeds",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000008": {
-                "id": "11111111-1111-1111-1111-000000000008",
-                "nombre": "Vienna Imperial",
-                "direccion": "Ringstrasse",
-                "ciudad": "Vienna",
-                "pais": "Austria",
-                "latitud": 48.2082,
-                "longitud": 16.3738,
-                "estrellas": 5,
-                "pmsProveedor": "Opera",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000009": {
-                "id": "11111111-1111-1111-1111-000000000009",
-                "nombre": "Barcelona Beach Hotel",
-                "direccion": "La Rambla",
-                "ciudad": "Barcelona",
-                "pais": "Spain",
-                "latitud": 41.3851,
-                "longitud": 2.1734,
-                "estrellas": 4,
-                "pmsProveedor": "Fidelio",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000010": {
-                "id": "11111111-1111-1111-1111-000000000010",
-                "nombre": "London City Lodge",
-                "direccion": "Baker Street",
-                "ciudad": "London",
-                "pais": "UK",
-                "latitud": 51.5074,
-                "longitud": -0.1278,
-                "estrellas": 3,
-                "pmsProveedor": "Cloudbeds",
-                "activo": True
-            },
-            "11111111-1111-1111-1111-000000000011": {
-                "id": "11111111-1111-1111-1111-000000000011",
-                "nombre": "Bogota Business Hotel",
-                "direccion": "Zona T",
-                "ciudad": "Bogota",
-                "pais": "Colombia",
-                "latitud": 4.7110,
-                "longitud": -74.0721,
-                "estrellas": 4,
-                "pmsProveedor": "Opera",
-                "activo": True
+                "activo": True,
+                "distancia": "3 km del centro",
+                "acceso": "Metro"
             }
         }
 
@@ -150,97 +47,50 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
                 "categoria": "Deluxe",
                 "capacidadMaxima": 2,
                 "descripcion": "Vista ciudad",
-                "imagenes": ["img1.jpg"]
+                "imagenes": ["img1.jpg"],
+                "tipo_habitacion": "Deluxe",
+                "tipo_cama": ["king"],
+                "tamano_habitacion": "35m2",
+                "amenidades": ["AC", "IDK"]
             },
             "22222222-2222-2222-2222-000000000002": {
                 "id": "22222222-2222-2222-2222-000000000002",
-                "hotelId": "11111111-1111-1111-1111-000000000002",
-                "tipo": "Suite",
-                "categoria": "Premium",
-                "capacidadMaxima": 3,
-                "descripcion": "Suite céntrica",
-                "imagenes": ["img2.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000003": {
-                "id": "22222222-2222-2222-2222-000000000003",
-                "hotelId": "11111111-1111-1111-1111-000000000003",
+                "hotelId": "11111111-1111-1111-1111-000000000001",
                 "tipo": "Doble",
                 "categoria": "Deluxe",
                 "capacidadMaxima": 2,
-                "descripcion": "Vista torre",
-                "imagenes": ["img3.jpg"]
+                "descripcion": "Vista ciudad",
+                "imagenes": ["img1.jpg"],
+                "tipo_habitacion": "Deluxe",
+                "tipo_cama": ["king"],
+                "tamano_habitacion": "35m2",
+                "amenidades": ["AC", "IDK"]
+            },
+            "22222222-2222-2222-2222-000000000003": {
+                "id": "22222222-2222-2222-2222-000000000003",
+                "hotelId": "11111111-1111-1111-1111-000000000002",
+                "tipo": "Doble",
+                "categoria": "Deluxe",
+                "capacidadMaxima": 2,
+                "descripcion": "Vista ciudad",
+                "imagenes": ["img1.jpg"],
+                "tipo_habitacion": "Deluxe",
+                "tipo_cama": ["king"],
+                "tamano_habitacion": "35m2",
+                "amenidades": ["AC", "IDK"]
             },
             "22222222-2222-2222-2222-000000000004": {
                 "id": "22222222-2222-2222-2222-000000000004",
-                "hotelId": "11111111-1111-1111-1111-000000000004",
-                "tipo": "Simple",
-                "categoria": "Standard",
-                "capacidadMaxima": 1,
-                "descripcion": "Económica",
-                "imagenes": ["img4.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000005": {
-                "id": "22222222-2222-2222-2222-000000000005",
-                "hotelId": "11111111-1111-1111-1111-000000000005",
-                "tipo": "Suite",
-                "categoria": "Luxury",
-                "capacidadMaxima": 4,
-                "descripcion": "Lujo total",
-                "imagenes": ["img5.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000006": {
-                "id": "22222222-2222-2222-2222-000000000006",
-                "hotelId": "11111111-1111-1111-1111-000000000006",
+                "hotelId": "11111111-1111-1111-1111-000000000002",
                 "tipo": "Doble",
-                "categoria": "Standard",
-                "capacidadMaxima": 2,
-                "descripcion": "Vista mar",
-                "imagenes": ["img6.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000007": {
-                "id": "22222222-2222-2222-2222-000000000007",
-                "hotelId": "11111111-1111-1111-1111-000000000007",
-                "tipo": "Doble",
-                "categoria": "Standard",
-                "capacidadMaxima": 2,
-                "descripcion": "Canal view",
-                "imagenes": ["img7.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000008": {
-                "id": "22222222-2222-2222-2222-000000000008",
-                "hotelId": "11111111-1111-1111-1111-000000000008",
-                "tipo": "Suite",
-                "categoria": "Luxury",
+                "categoria": "Deluxe",
                 "capacidadMaxima": 3,
-                "descripcion": "Imperial",
-                "imagenes": ["img8.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000009": {
-                "id": "22222222-2222-2222-2222-000000000009",
-                "hotelId": "11111111-1111-1111-1111-000000000009",
-                "tipo": "Doble",
-                "categoria": "Standard",
-                "capacidadMaxima": 2,
-                "descripcion": "Beach",
-                "imagenes": ["img9.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000010": {
-                "id": "22222222-2222-2222-2222-000000000010",
-                "hotelId": "11111111-1111-1111-1111-000000000010",
-                "tipo": "Simple",
-                "categoria": "Standard",
-                "capacidadMaxima": 1,
-                "descripcion": "City basic",
-                "imagenes": ["img10.jpg"]
-            },
-            "22222222-2222-2222-2222-000000000011": {
-                "id": "22222222-2222-2222-2222-000000000011",
-                "hotelId": "11111111-1111-1111-1111-000000000011",
-                "tipo": "Doble",
-                "categoria": "Business",
-                "capacidadMaxima": 2,
-                "descripcion": "Business",
-                "imagenes": ["img11.jpg"]
+                "descripcion": "Vista ciudad",
+                "imagenes": ["img1.jpg"],
+                "tipo_habitacion": "Deluxe",
+                "tipo_cama": ["king"],
+                "tamano_habitacion": "35m2",
+                "amenidades": ["AC", "IDK"]
             }
         }
 
@@ -250,8 +100,8 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
                 "codigo": "CODE1",
                 "viajeroId": "44444444-4444-4444-4444-000000000001",
                 "habitacionId": "22222222-2222-2222-2222-000000000001",
-                "fechaCheckIn": datetime(2026, 4, 1, 15, 0),
-                "fechaCheckOut": datetime(2026, 4, 3, 11, 0),
+                "fechaCheckIn": datetime(2026, 9, 1, 15, 0),
+                "fechaCheckOut": datetime(2026, 9, 3, 10, 0),
                 "numHuespedes": 2,
                 "estado": "CONFIRMADA",
                 "subtotal": 200.0,
@@ -261,55 +111,108 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             },
             "33333333-3333-3333-3333-000000000002": {
                 "id": "33333333-3333-3333-3333-000000000002",
-                "codigo": "CODE2",
+                "codigo": "CODE1",
                 "viajeroId": "44444444-4444-4444-4444-000000000002",
-                "habitacionId": "22222222-2222-2222-2222-000000000002",
-                "fechaCheckIn": datetime(2026, 4, 2, 15, 0),
-                "fechaCheckOut": datetime(2026, 4, 5, 11, 0),
-                "numHuespedes": 3,
-                "estado": "CONFIRMADA",
-                "subtotal": 250.0,
-                "impuestos": 50.0,
-                "total": 300.0,
-                "moneda": "EUR"
-            },
-            "33333333-3333-3333-3333-000000000003": {
-                "id": "33333333-3333-3333-3333-000000000003",
-                "codigo": "CODE3",
-                "viajeroId": "44444444-4444-4444-4444-000000000003",
                 "habitacionId": "22222222-2222-2222-2222-000000000003",
-                "fechaCheckIn": datetime(2026, 4, 3, 15, 0),
-                "fechaCheckOut": datetime(2026, 4, 6, 11, 0),
+                "fechaCheckIn": datetime(2026, 8, 1, 15, 0),
+                "fechaCheckOut": datetime(2026, 8, 3, 10, 0),
                 "numHuespedes": 2,
                 "estado": "CONFIRMADA",
-                "subtotal": 260.0,
-                "impuestos": 52.0,
-                "total": 312.0,
+                "subtotal": 200.0,
+                "impuestos": 40.0,
+                "total": 240.0,
                 "moneda": "EUR"
             }
         }
 
+        self._tarifa: Dict[str, Tarifa] = {
+            "55555555-5555-5555-5555-000000000001": {
+                "id": "55555555-5555-5555-5555-000000000001",
+                "HabitacionId": "22222222-2222-2222-2222-000000000001",
+                "precioBase": 100.0,
+                "moneda": "EUR",
+                "fechaInicio": datetime(2024, 4, 1),
+                "fechaFin": datetime(2028, 4, 30),
+                "descuento": 0.1
+            },
+            "55555555-5555-5555-5555-000000000002": {
+                "id": "55555555-5555-5555-5555-000000000002",
+                "HabitacionId": "22222222-2222-2222-2222-000000000002",
+                "precioBase": 150.0,
+                "moneda": "EUR",
+                "fechaInicio": datetime(2024, 4, 1),
+                "fechaFin": datetime(2028, 4, 30),
+                "descuento": 0.0
+            },
+            "55555555-5555-5555-5555-000000000003": {
+                "id": "55555555-5555-5555-5555-000000000003",
+                "HabitacionId": "22222222-2222-2222-2222-000000000003",
+                "precioBase": 80.0,
+                "moneda": "EUR",
+                "fechaInicio": datetime(2024, 4, 1),
+                "fechaFin": datetime(2028, 4, 30),
+                "descuento": 0.0
+            },
+            "55555555-5555-5555-5555-000000000004": {
+                "id": "55555555-5555-5555-5555-000000000004",
+                "HabitacionId": "22222222-2222-2222-2222-000000000004",
+                "precioBase": 400.0,
+                "moneda": "EUR",
+                "fechaInicio": datetime(2024, 4, 1),
+                "fechaFin": datetime(2028, 4, 30),
+                "descuento": 0.2
+            }
+        }
+
+        self._resenas: Dict[str, Resena] = {
+            "66666666-6666-6666-6666-000000000001": {
+                "id": "66666666-6666-6666-6666-000000000001",
+                "viajeroId": "77777777-7777-7777-7777-000000000001",
+                "hotelId": "11111111-1111-1111-1111-000000000001",
+                "reservaId": "33333333-3333-3333-3333-000000000001",
+                "calificacion": 4,
+                "comentario": "Buena",
+                "fecha": datetime(2024, 4, 1),
+                "verificacion": True
+            },
+            "66666666-6666-6666-6666-000000000002": {
+                "id": "66666666-6666-6666-6666-000000000002",
+                "viajeroId": "77777777-7777-7777-7777-000000000001",
+                "hotelId": "11111111-1111-1111-1111-000000000001",
+                "reservaId": "33333333-3333-3333-3333-000000000001",
+                "calificacion": 3,
+                "comentario": "Buena",
+                "fecha": datetime(2024, 4, 1),
+                "verificacion": True
+            }
+        }
+
+
     def search_hotels(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int) -> list[HabitacionesDisponibles]:
-        #Filtrar hoteles por ciudad
+        # 1. Filtrar hoteles por ciudad
         hotels_by_city = [
             hotel
             for hotel in self._hotel.values()
             if hotel["ciudad"].lower() == ciudad.lower()
         ]
 
-        #Filtrar habitaciones por los hoteles obtenidos y si la habitacion al menos puede hospedar a la cantidad de personas.
         hotel_ids = {hotel["id"] for hotel in hotels_by_city}
+
+        # 2. Filtrar habitaciones por capacidad
+        personas_por_habitacion = ceil(group/no_rooms)
 
         habitaciones = [
             habitacion
             for habitacion in self._habitacion.values()
             if habitacion["hotelId"] in hotel_ids
-            and habitacion["capacidadMaxima"] >= group
+            and habitacion["capacidadMaxima"] >= personas_por_habitacion
         ]
 
         habitaciones_disponibles: list[HabitacionesDisponibles] = []
 
+        # 3. Validar disponibilidad + calcular precio
         for habitacion in habitaciones:
+
             ocupada = any(
                 reserva["habitacionId"] == habitacion["id"] and not (
                     checkout <= reserva["fechaCheckIn"].date()
@@ -321,15 +224,84 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             if ocupada:
                 continue
 
+            precio = self._calculate_price(
+                habitacion["id"], checkin, checkout
+            )
+
+            if precio == 0:
+                continue
+
             hotel = self._hotel[habitacion["hotelId"]]
+
+            total_resenas, promedio_resenas = self._get_reviews_stats(habitacion["hotelId"])
 
             habitaciones_disponibles.append(
                 HabitacionesDisponibles(
                     id=habitacion["id"],
                     nombre_hotel=hotel["nombre"],
-                    precio=10,
+                    precio=precio,
                     direccion=hotel["direccion"],
-                    capacidad_maxima=habitacion["capacidadMaxima"]
+                    capacidad_maxima=habitacion["capacidadMaxima"],
+                    distancia=hotel["distancia"],
+                    acceso=hotel["acceso"],
+                    estrellas=hotel["estrellas"],
+                    cantidad_resenas= total_resenas,
+                    puntuacion_resena= promedio_resenas,
+                    tipo_habitacion=habitacion["tipo_habitacion"],
+                    tipo_cama=habitacion["tipo_cama"],
+                    tamano_habitacion=habitacion["tamano_habitacion"],
+                    amenidades=habitacion["amenidades"],
+                    imagenes=habitacion["imagenes"]
                 )
             )
-        return habitaciones_disponibles
+
+        # 4. Agrupar por hotel y validar número de habitaciones
+        resultado_final: list[HabitacionesDisponibles] = []
+
+        habitaciones_por_hotel: Dict[str, list] = {}
+
+        for hab in habitaciones_disponibles:
+            habitaciones_por_hotel.setdefault(hab.nombre_hotel, []).append(hab)
+
+        for hotel, habs in habitaciones_por_hotel.items():
+            if len(habs) >= no_rooms:
+                resultado_final.extend(habs)
+
+        return resultado_final
+    
+    def _calculate_price(self, habitacion_id: str, checkin: date, checkout: date) -> float:
+        noches = (checkout - checkin).days
+
+        tarifas_validas = [
+            tarifa
+            for tarifa in self._tarifa.values()
+            if tarifa["HabitacionId"] == habitacion_id
+            and tarifa["fechaInicio"].date() <= checkin
+            and tarifa["fechaFin"].date() >= checkout
+        ]
+
+        if not tarifas_validas:
+            return 0.0
+
+        tarifa = tarifas_validas[0]
+
+        precio_base = tarifa["precioBase"]
+        descuento = tarifa["descuento"]
+
+        precio_final = precio_base * noches * (1 - descuento)
+
+        return precio_final
+    
+    def _get_reviews_stats(self, hotel_id: str) -> tuple[int, float]:
+        resenas = [
+            r for r in self._resenas.values()
+            if r["hotelId"] == hotel_id
+        ]
+
+        if not resenas:
+            return 0, 0.0
+
+        total = len(resenas)
+        promedio = sum(r["calificacion"] for r in resenas) / total
+
+        return total, round(promedio, 1)

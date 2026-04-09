@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import date
 
 from domain.models.models import Reserva, Habitacion, Hotel, HabitacionesDisponibles
@@ -10,6 +11,7 @@ from error import (
     InvalidDateRangeException,
     BookingDateValidationException
     )
+from config import ALLOWED_ORIGINS
 
 
 repo_instance = build_search_repository()
@@ -21,7 +23,15 @@ def repo_dep() -> SearchRepositoryPort:
 
 app = FastAPI(title="Search Service API")
 
-@app.get("/api/search_rooms")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+@app.get("/search/search_rooms")
 def buscar_habitacion(
     ciudad: str,
     checkin: date,
@@ -42,3 +52,7 @@ def buscar_habitacion(
         raise HTTPException(400, "the check-in date is later than the check-out date")
     except BookingDateValidationException:
         raise HTTPException(400, "the check-in date is lower than today")
+
+@app.get("/search/ping")
+def healthcheck():
+    return "pong"

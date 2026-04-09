@@ -1,10 +1,14 @@
-from os import getenv
+from adapters.postgres.init_db import init_db
+from config import (
+    APP_HOST,
+    REPOSITORY_IMPL,
+    APP_PORT
+)
 
 import uvicorn
 
-REPOSITORY_IMPL = getenv("REPOSITORY_IMPL", "memory")
-APP_HOST = getenv("APP_HOST", "0.0.0.0")
-APP_PORT = getenv("APP_PORT", "8000")
-
 if __name__ == "__main__":
+    #inicializar base de datos
+    #if REPOSITORY_IMPL == "postgres":
+    #    init_db()
     uvicorn.run("entrypoints.app:app", host=APP_HOST, port=int(APP_PORT))
