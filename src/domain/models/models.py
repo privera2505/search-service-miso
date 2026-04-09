@@ -9,6 +9,16 @@ class HabitacionesDisponibles(BaseModel):
     precio: float
     direccion: str
     capacidad_maxima: int
+    distancia: str
+    acceso: str
+    estrellas: int
+    puntuacion_resena: float
+    cantidad_resenas: int
+    tipo_habitacion: str
+    tipo_cama: list[str]
+    tamano_habitacion: str
+    amenidades: list[str]
+    imagenes: list[str]
 
 
 class Reserva(BaseModel):
@@ -33,6 +43,10 @@ class Habitacion(BaseModel):
     capacidadMaxima: int
     descripcion: str
     imagenes: list[str]
+    tipo_habitacion: str
+    tipo_cama: list[str]
+    tamano_habitacion: str
+    amenidades: list[str]
 
 class Hotel(BaseModel):
     id: str | None = None
@@ -45,3 +59,24 @@ class Hotel(BaseModel):
     estrellas: int
     pmsProveedor: str
     activo: bool
+    distancia: str
+    acceso: str
+
+class Tarifa(BaseModel):
+    id: str | None = None
+    HabitacionId: str
+    precioBase: float
+    moneda: str
+    fechaInicio: datetime
+    fechaFin: datetime
+    descuento: float
+
+class Resena(BaseModel):
+    id: str | None = None
+    viajeroId: str
+    hotelId: str
+    reservaId: str
+    calificacion: int
+    comentario: str
+    fecha: datetime
+    verificada: bool
