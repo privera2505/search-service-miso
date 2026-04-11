@@ -86,6 +86,7 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                     id=habitacion.id,
                     nombre_hotel=hotel.nombre,
                     precio=tarifa.precioBase * (1 - tarifa.descuento),
+                    moneda=tarifa.moneda,
                     direccion=hotel.direccion,
                     capacidad_maxima=habitacion.capacidadMaxima,
                     distancia=hotel.distancia,

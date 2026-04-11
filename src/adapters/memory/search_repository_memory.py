@@ -224,7 +224,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             if ocupada:
                 continue
 
-            precio = self._calculate_price(
+            precio, moneda = self._calculate_price(
                 habitacion["id"], checkin, checkout
             )
 
@@ -240,6 +240,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
                     id=habitacion["id"],
                     nombre_hotel=hotel["nombre"],
                     precio=precio,
+                    moneda= moneda,
                     direccion=hotel["direccion"],
                     capacidad_maxima=habitacion["capacidadMaxima"],
                     distancia=hotel["distancia"],
@@ -290,7 +291,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
 
         precio_final = precio_base * noches * (1 - descuento)
 
-        return precio_final
+        return precio_final, tarifa["moneda"]
     
     def _get_reviews_stats(self, hotel_id: str) -> tuple[int, float]:
         resenas = [

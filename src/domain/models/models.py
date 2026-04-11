@@ -7,6 +7,7 @@ class HabitacionesDisponibles(BaseModel):
     id: str
     nombre_hotel: str
     precio: float
+    moneda: str
     direccion: str
     capacidad_maxima: int
     distancia: str
