@@ -217,6 +217,15 @@ curl 'http://localhost:8000/search/ping'
 - Status: 200 OK
 - "pong"
 
+### **7. Consultar las ciudades donde hay hoteles**
+**Descripción:**  Devuelve una lista de ciudades únicas en las que existen hoteles activos.
+```bash
+curl 'http://localhost:8000/search/search_cities'
+```
+**Respuesta Esperada:** 
+- Status: 200
+- ["Madrid"]
+
 ## Autor
 
 - Pablo Jose Rivera herrera

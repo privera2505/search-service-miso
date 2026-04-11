@@ -305,3 +305,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         promedio = sum(r["calificacion"] for r in resenas) / total
 
         return total, round(promedio, 1)
+    
+    def search_cities(self) -> list[str]:
+        ciudades = {hotel["ciudad"] for hotel in self._hotel.values()}
+        return list(ciudades)

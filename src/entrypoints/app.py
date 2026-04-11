@@ -53,6 +53,17 @@ def buscar_habitacion(
     except BookingDateValidationException:
         raise HTTPException(400, "the check-in date is lower than today")
 
+@app.get("/search/search_cities")
+def search_cities(repo: SearchRepositoryPort = Depends(repo_dep)):
+    try:
+        return repo.search_cities()
+    except Exception:
+        raise HTTPException(
+            503,
+            "El servicio está temporalmente fuera de servicio."
+        )
+
+
 @app.get("/search/ping")
 def healthcheck():
     return "pong"
