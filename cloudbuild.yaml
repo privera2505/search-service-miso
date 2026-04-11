@@ -54,12 +54,13 @@ steps:
         kind: Service
         metadata:
           name: ${_SERVICE_NAME}
-        spec:
-          ingress: ${_INGRESS_TYPE}
+          annotations:
+            run.googleapis.com/ingress: ${_INGRESS_TYPE}
           template:
-            vpcAccess:
-              connector: projects/$PROJECT_ID/locations/${_REGION}/connectors/travelhub-connector
-              egress: PRIVATE_RANGES_ONLY
+            metadata:
+              annotations:
+                run.googleapis.com/network-interfaces: '[{"network":"${_VPC_NAME}","subnetwork":"${_SUBNET_NAME}"}]'
+                run.googleapis.com/vpc-access-egress: private-ranges-only
             spec:
               containers:
                 - image: containerurl
