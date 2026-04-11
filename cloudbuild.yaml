@@ -58,7 +58,7 @@ steps:
           ingress: ${_INGRESS_TYPE}
           template:
             vpcAccess:
-              connector: travelhub-connector
+              connector: projects/$PROJECT_ID/locations/${_REGION}/connectors/travelhub-connector
               egress: PRIVATE_RANGES_ONLY
             spec:
               containers:
@@ -66,8 +66,7 @@ steps:
                   ports:
                     - containerPort: ${_CONTAINER_PORT}
                   env:
-        $$ENV_VARS_YAML
-              vpcAccess: 
+        $$ENV_VARS_YAML 
         EOF
 
         echo "===== VERIFICANDO SERVICE.YAML ====="
