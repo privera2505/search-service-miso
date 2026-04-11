@@ -13,7 +13,10 @@ class GetDB:
             db_url = f"postgresql+pg8000://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
             self.engine = create_engine(db_url)
         else: 
-            connector = Connector().connect(
+            connector = Connector()
+            
+            def getconn():
+                return connector.connect(
                 INSTANCE_CONNECTION_NAME,
                 "pg8000",
                 user=DB_USER,
@@ -23,7 +26,7 @@ class GetDB:
 
             self.engine = create_engine(
             "postgresql+pg8000://",
-            creator=connector,
+            creator=getconn,
             pool_pre_ping=True
             )
 
