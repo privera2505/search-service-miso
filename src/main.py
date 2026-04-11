@@ -9,6 +9,6 @@ import uvicorn
 
 if __name__ == "__main__":
     #inicializar base de datos
-    #if REPOSITORY_IMPL == "postgres":
-    #    init_db()
+    if REPOSITORY_IMPL == "postgres":
+        init_db()
     uvicorn.run("entrypoints.app:app", host=APP_HOST, port=int(APP_PORT))
