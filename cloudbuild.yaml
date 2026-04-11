@@ -58,9 +58,7 @@ steps:
           ingress: ${_INGRESS_TYPE}
           template:
             vpcAccess:
-              networkInterfaces:
-                - network: ${_VPC_NAME}
-                  subnetwork: ${_SUBNET_NAME}
+              connector: travelhub-connector
               egress: PRIVATE_RANGES_ONLY
             spec:
               containers:
