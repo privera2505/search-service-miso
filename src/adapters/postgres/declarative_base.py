@@ -1,4 +1,5 @@
-from google.cloud.sql.connector import Connector
+from google.cloud.sql.connector import Connector, IPTypes
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from os import environ
@@ -21,7 +22,8 @@ class GetDB:
                 "pg8000",
                 user=DB_USER,
                 password=DB_PASSWORD,
-                db= DB_NAME
+                db= DB_NAME,
+                ip_type=IPTypes.PRIVATE
             )
 
             self.engine = create_engine(
