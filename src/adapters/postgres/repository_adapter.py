@@ -106,3 +106,17 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
 
         finally:
             db.close()
+    
+    def search_cities(self) -> list[str]:
+        db = db1.get_session()
+        try:
+            ciudades = (
+                db.query(Hotel.ciudad)
+                .filter(Hotel.activo == True)
+                .distinct()
+                .all()
+            )
+            return [c[0] for c in ciudades]
+        finally:
+            db.close()
+        return 

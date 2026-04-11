@@ -13,3 +13,8 @@ class SearchRepositoryPort(ABC):
     def search_hotels(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int) -> List[HabitacionesDisponibles]:
         """Returns a list of available hotels with city, checkin, checkout, group and no_romms filter."""
         pass
+
+    @abstractmethod
+    def search_cities(self) -> list[str]:
+        """Returns a list of available cities where you can book a hotel"""
+        pass
