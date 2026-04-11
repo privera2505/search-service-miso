@@ -54,10 +54,14 @@ steps:
         kind: Service
         metadata:
           name: ${_SERVICE_NAME}
-          annotations:
-            run.googleapis.com/ingress: ${_INGRESS_TYPE}
         spec:
+          ingress: ${_INGRESS_TYPE}
           template:
+            vpcAccess:
+              networkInterfaces:
+                - network: ${_VPC_NAME}
+                  subnetwork: ${_SUBNET_NAME}
+              egress: PRIVATE_RANGES_ONLY
             spec:
               containers:
                 - image: containerurl
@@ -65,6 +69,7 @@ steps:
                     - containerPort: ${_CONTAINER_PORT}
                   env:
         $$ENV_VARS_YAML
+              vpcAccess: 
         EOF
 
         echo "===== VERIFICANDO SERVICE.YAML ====="
