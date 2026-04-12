@@ -3,7 +3,7 @@ from adapters.postgres.declarative_base import db1
 from domain.ports.search_repository_port import SearchRepositoryPort
 from domain.models.models import HabitacionesDisponibles
 
-from sqlalchemy import func
+from sqlalchemy import func, select, exists
 
 from math import ceil
 
@@ -20,15 +20,9 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
         db = db1.get_session()
         personas_por_habitacion = ceil(group/no_rooms)
         try:
-            # Subquery Habitaciones ocupadas en las fechas
-            subquery_reservas = db.query(Reserva.habitacionId).filter(
-                Reserva.fechaCheckIn < checkout,
-                Reserva.fechaCheckOut > checkin
-            ).subquery()
-
-            # Subquery Hoteles que tengan las habitaciones necesarias para el grupo
-            subquery_hoteles_validos = (
-                db.query(Habitacion.hotelId)
+            #Query Principal
+            results = (
+                db.query(Habitacion, Hotel, Tarifa)
                 .join(Hotel, Habitacion.hotelId == Hotel.id)
                 .join(Tarifa, Tarifa.habitacionId == Habitacion.id)
                 .filter(
@@ -37,24 +31,11 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                     Habitacion.capacidadMaxima >= personas_por_habitacion,
                     Tarifa.fechaInicio <= checkin,
                     Tarifa.fechaFin >= checkout,
-                    ~Habitacion.id.in_(subquery_reservas)
-                )
-                .group_by(Habitacion.hotelId)
-                .having(func.count(Habitacion.id) >= no_rooms)
-                .subquery()
-            )
-
-            #Query Principal
-            results = (
-                db.query(Habitacion, Hotel, Tarifa)
-                .join(Hotel, Habitacion.hotelId == Hotel.id)
-                .join(Tarifa, Tarifa.habitacionId == Habitacion.id)
-                .filter(
-                    Habitacion.hotelId.in_(subquery_hoteles_validos),
-                    Habitacion.capacidadMaxima >= group,
-                    Tarifa.fechaInicio <= checkin,
-                    Tarifa.fechaFin >= checkout,
-                    ~Habitacion.id.in_(subquery_reservas)
+                    ~exists().where(
+                        Reserva.habitacionId == Habitacion.id,
+                        Reserva.fechaCheckIn < checkout,
+                        Reserva.fechaCheckOut > checkin
+                    )
                 )
                 .all()
             )
@@ -66,7 +47,7 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                 db.query(
                     Resena.hotelId,
                     func.count(Resena.id).label("cantidad"),
-                    func.avg(Resena.puntuacion).label("promedio")
+                    func.avg(Resena.calificacion).label("promedio")
                 )
                 .filter(Resena.hotelId.in_(hotels_ids))
                 .group_by(Resena.hotelId)

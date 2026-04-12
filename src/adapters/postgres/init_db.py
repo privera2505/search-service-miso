@@ -152,6 +152,7 @@ def init_db():
         ),
     ]
     session.add_all(tarifas)
+    session.commit()
 
 
     # RESERVAS
@@ -186,32 +187,33 @@ def init_db():
         ),
     ]
     session.add_all(reservas)
+    session.commit()
 
     resenas = [
         Resena(
             id="66666666-6666-6666-6666-000000000001",
-            viajero_id="77777777-7777-7777-7777-000000000001",
+            viajeroId="77777777-7777-7777-7777-000000000001",
             hotelId="11111111-1111-1111-1111-000000000001",
             reservaId="33333333-3333-3333-3333-000000000001",
             calificacion=4,
             comentario="Buena",
             fecha=datetime(2026, 8, 1, 15, 0),
-            verificacion=True
+            verificada=True
         ),
         Resena(
             id="66666666-6666-6666-6666-000000000002",
-            viajero_id="77777777-7777-7777-7777-000000000001",
+            viajeroId="77777777-7777-7777-7777-000000000001",
             hotelId="11111111-1111-1111-1111-000000000001",
             reservaId="33333333-3333-3333-3333-000000000001",
             calificacion=3,
             comentario="Buena",
             fecha=datetime(2026, 8, 1, 15, 0),
-            verificacion=True
+            verificada=True
         ),   
     ]
     session.add_all(resenas)
-
     session.commit()
+    
     session.close()
 
     print("DB inicializada con datos mock")
