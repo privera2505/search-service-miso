@@ -2,7 +2,7 @@ import uuid
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, String, Float, Integer, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, DateTime, String, Float, Integer, Boolean, ForeignKey, JSON, Index
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -24,6 +24,10 @@ class Hotel(Base):
     distancia = Column(String, nullable=False)
     acceso = Column(String, nullable=False)
 
+    __table_args__ = (
+        Index("idx_hotel_ciudad_activo", "ciudad", "activo"),
+    )
+
 class Habitacion(Base):
     __tablename__ = "habitacion"
     __mapper_args__ = {"confirm_deleted_rows": False}
@@ -40,6 +44,10 @@ class Habitacion(Base):
     tamano_habitacion = Column(String, nullable=False)
     amenidades = Column(JSON, nullable=False)
 
+    __table_args__ = (
+        Index("idx_habitacion_hotel", "hotelId"),
+    )
+
 class Tarifa(Base):
     __tablename__ = "tarifa"
     __mapper_args__ = {"confirm_deleted_rows": False}
@@ -51,6 +59,10 @@ class Tarifa(Base):
     fechaInicio = Column(DateTime(timezone=True), nullable=False)
     fechaFin = Column(DateTime(timezone=True), nullable=False)
     descuento = Column(Float, nullable=False)
+    
+    __table_args__ = (
+        Index("idx_tarifa_habitacion_fecha", "habitacionId", "fechaInicio", "fechaFin"),
+    )
 
 class Reserva(Base):
     __tablename__ = "reserva"
@@ -68,6 +80,10 @@ class Reserva(Base):
     impuestos = Column(Float, nullable=False)
     total = Column(Float, nullable=False)
     moneda = Column(String, nullable=False)
+    
+    __table_args__ = (
+        Index("idx_reserva_habitacion_fechas", "habitacionId", "fechaCheckIn", "fechaCheckOut"),
+    )
 
 class Resena(Base):
     __tablename__ = "resena"
@@ -81,3 +97,7 @@ class Resena(Base):
     comentario = Column(String, nullable=False)
     fecha = Column(DateTime(timezone=True), nullable=False)
     verificada = Column(Boolean, nullable=False)
+
+    __table_args__ = (
+        Index("idx_resena_hotel", "hotelId"),
+    )
