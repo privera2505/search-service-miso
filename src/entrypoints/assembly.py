@@ -7,5 +7,5 @@ from config import REPOSITORY_IMPL
 
 def build_search_repository() -> SearchRepositoryPort:
     if REPOSITORY_IMPL == "postgres":
-        InBdSearchRepositoryAdapter()
+        return InBdSearchRepositoryAdapter()
     return InMemorySearchRepositoryAdapter()
