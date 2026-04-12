@@ -11,7 +11,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         self._hotel: Dict[str, Hotel] = {
             "11111111-1111-1111-1111-000000000011": {
                 "id": "11111111-1111-1111-1111-000000000011",
-                "nombre": "Hotel 1",
+                "nombre": "Hotel del canto",
                 "direccion": "Calle 123",
                 "ciudad": "Madrid",
                 "pais": "Spain",
@@ -25,7 +25,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             },
             "11111111-1111-1111-1111-000000000002": {
                 "id": "11111111-1111-1111-1111-000000000002",
-                "nombre": "Hotel 2",
+                "nombre": "Hotel del pesao",
                 "direccion": "Gran Via 45",
                 "ciudad": "Madrid",
                 "pais": "Spain",
