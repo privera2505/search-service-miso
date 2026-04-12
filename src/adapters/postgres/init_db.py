@@ -8,21 +8,34 @@ def init_db():
     engine = db1.get_engine()
 
     #Crear tablas
-    Base.metadata.create_all(bind=engine)
-
+    Base.metadata.drop_all(
+        bind=engine,
+        tables=[
+                Hotel.__table__,
+                Habitacion.__table__,
+                Tarifa.__table__,
+                Reserva.__table__,
+                Resena.__table__,
+            ]
+        )
+    Base.metadata.create_all(            
+        bind=engine,
+        tables=[
+                Hotel.__table__,
+                Habitacion.__table__,
+                Tarifa.__table__,
+                Reserva.__table__,
+                Resena.__table__,
+            ]
+        )
+    #Base de datos recreadas
     session = db1.get_session()
-
-    #Evitar duplicados
-    if session.query(Hotel).first():
-        print("DB ya inicializada")
-        session.close()
-        return
 
     # HOTELS
     hoteles = [
         Hotel(
             id="11111111-1111-1111-1111-000000000001",
-            nombre="Hotel 1",
+            nombre="Hotel treta",
             direccion="Calle 123",
             ciudad="Madrid",
             pais="Spain",
@@ -213,7 +226,7 @@ def init_db():
     ]
     session.add_all(resenas)
     session.commit()
-    
+
     session.close()
 
     print("DB inicializada con datos mock")
