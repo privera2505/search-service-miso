@@ -27,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-@app.get("/api/v1/search/search_rooms")
+@app.get("/search/search_rooms")
 def buscar_habitacion(
     ciudad: str,
     checkin: date,
@@ -49,7 +49,7 @@ def buscar_habitacion(
     except BookingDateValidationException:
         raise HTTPException(400, "the check-in date is lower than today")
 
-@app.get("/api/v1/search/search_cities")
+@app.get("/search/search_cities")
 def search_cities(repo: SearchRepositoryPort = Depends(repo_dep)):
     try:
         return repo.search_cities()
@@ -60,6 +60,6 @@ def search_cities(repo: SearchRepositoryPort = Depends(repo_dep)):
         )
 
 
-@app.get("/api/v1/search/ping")
+@app.get("/search/ping")
 def healthcheck():
     return "pong"
