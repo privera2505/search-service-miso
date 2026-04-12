@@ -9,8 +9,8 @@ from domain.ports.search_repository_port import SearchRepositoryPort
 class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
     def __init__(self) -> None:
         self._hotel: Dict[str, Hotel] = {
-            "11111111-1111-1111-1111-000000000001": {
-                "id": "11111111-1111-1111-1111-000000000001",
+            "11111111-1111-1111-1111-000000000011": {
+                "id": "11111111-1111-1111-1111-000000000011",
                 "nombre": "Hotel 1",
                 "direccion": "Calle 123",
                 "ciudad": "Madrid",
@@ -42,7 +42,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         self._habitacion: Dict[str, Habitacion] = {
             "22222222-2222-2222-2222-000000000001": {
                 "id": "22222222-2222-2222-2222-000000000001",
-                "hotelId": "11111111-1111-1111-1111-000000000001",
+                "hotelId": "11111111-1111-1111-1111-000000000011",
                 "tipo": "Doble",
                 "categoria": "Deluxe",
                 "capacidadMaxima": 2,
@@ -55,7 +55,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             },
             "22222222-2222-2222-2222-000000000002": {
                 "id": "22222222-2222-2222-2222-000000000002",
-                "hotelId": "11111111-1111-1111-1111-000000000001",
+                "hotelId": "11111111-1111-1111-1111-000000000011",
                 "tipo": "Doble",
                 "categoria": "Deluxe",
                 "capacidadMaxima": 2,
@@ -168,7 +168,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             "66666666-6666-6666-6666-000000000001": {
                 "id": "66666666-6666-6666-6666-000000000001",
                 "viajeroId": "77777777-7777-7777-7777-000000000001",
-                "hotelId": "11111111-1111-1111-1111-000000000001",
+                "hotelId": "11111111-1111-1111-1111-000000000011",
                 "reservaId": "33333333-3333-3333-3333-000000000001",
                 "calificacion": 4,
                 "comentario": "Buena",
@@ -178,7 +178,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             "66666666-6666-6666-6666-000000000002": {
                 "id": "66666666-6666-6666-6666-000000000002",
                 "viajeroId": "77777777-7777-7777-7777-000000000001",
-                "hotelId": "11111111-1111-1111-1111-000000000001",
+                "hotelId": "11111111-1111-1111-1111-000000000011",
                 "reservaId": "33333333-3333-3333-3333-000000000001",
                 "calificacion": 3,
                 "comentario": "Buena",
