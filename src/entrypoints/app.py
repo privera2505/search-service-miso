@@ -13,12 +13,8 @@ from error import (
     )
 from config import ALLOWED_ORIGINS
 
-
-repo_instance = build_search_repository()
-
-
 def repo_dep() -> SearchRepositoryPort:
-    return repo_instance
+    return build_search_repository()
 
 
 app = FastAPI(title="Search Service API")
