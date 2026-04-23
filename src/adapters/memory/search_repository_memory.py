@@ -2,8 +2,10 @@ from datetime import date, datetime
 from math import ceil
 from typing import Dict
 
-from domain.models.models import Reserva, Habitacion, Hotel, HabitacionesDisponibles, Tarifa, Resena
+from domain.models.models import Reserva, Habitacion, Hotel, HabitacionesDisponibles, Tarifa, Resena, HabitacionDetalle
 from domain.ports.search_repository_port import SearchRepositoryPort
+
+from error import RoomNotFound, RoomNotHavefee
 
 
 class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
@@ -282,7 +284,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         ]
 
         if not tarifas_validas:
-            return 0.0
+            return 0.0, "EUR"
 
         tarifa = tarifas_validas[0]
 
@@ -310,3 +312,38 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
     def search_cities(self) -> list[str]:
         ciudades = {hotel["ciudad"] for hotel in self._hotel.values()}
         return list(ciudades)
+    
+    def room_detail(self, id_habitacion: str, checkin: date, checkout: date):
+        if id_habitacion not in self._habitacion:
+            raise RoomNotFound()
+        
+        habitacion = self._habitacion.get(id_habitacion)
+
+        precio, moneda = self._calculate_price(
+                habitacion["id"], checkin, checkout
+            )
+        
+        if precio == 0:
+            raise RoomNotHavefee()
+
+        hotel = self._hotel.get(habitacion["hotelId"]) 
+
+        habitacion_detalle = HabitacionDetalle(
+            id=habitacion["id"],
+            nombre_hotel=hotel["nombre"],
+            precio=precio,
+            moneda=moneda,
+            direccion=hotel["direccion"],
+            capacidad_maxima=habitacion["capacidadMaxima"],
+            distancia=hotel["distancia"],
+            acceso=hotel["acceso"],
+            estrellas=hotel["estrellas"],
+            tipo_habitacion=habitacion["tipo_habitacion"],
+            tipo_cama=habitacion["tipo_cama"],
+            tamano_habitacion=habitacion["tamano_habitacion"],
+            amenidades=habitacion["amenidades"],
+            imagenes=habitacion["imagenes"],
+            latitud=hotel["latitud"],
+            longitud=hotel["longitud"]
+        )
+        return habitacion_detalle

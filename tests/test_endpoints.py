@@ -75,3 +75,46 @@ def test_search_cities(client: client):
     assert get.status_code == 200
     data = get.json()
     assert isinstance(data, list)
+
+def test_room_detail_correct(client: client):
+    get = client.get(
+        "/search/detail_room?habitacionId=22222222-2222-2222-2222-000000000001&checkin=2026-10-01&checkout=2026-10-12"
+    )
+
+    assert get.status_code == 200
+
+    # Es un objeto
+    data = get.json()
+    assert isinstance(data, dict)
+
+    # Revisar estructura de respuesta
+    assert "id" in data
+    assert "nombre_hotel" in data
+    assert "precio" in data
+    assert "moneda" in data
+    assert "direccion" in data
+    assert "capacidad_maxima" in data
+    assert "distancia" in data
+    assert "acceso" in data
+    assert "estrellas" in data
+    assert "tipo_habitacion" in data
+    assert "tipo_cama" in data
+    assert "tamano_habitacion" in data
+    assert "amenidades" in data
+    assert "imagenes" in data
+    assert "latitud" in data
+    assert "longitud" in data
+
+def test_room_detail_no_room(client: client):
+    get = client.get(
+        "/search/detail_room?habitacionId=123&checkin=2026-10-01&checkout=2026-10-12"
+    )
+
+    assert get.status_code == 404
+
+def test_room_detail_no_fee(client:client):
+    get = client.get(
+        "/search/detail_room?habitacionId=22222222-2222-2222-2222-000000000001&checkin=2030-10-01&checkout=2030-10-12"
+    )
+
+    assert get.status_code == 409

@@ -9,7 +9,9 @@ from entrypoints.assembly import build_search_repository
 
 from error import (
     InvalidDateRangeException,
-    BookingDateValidationException
+    BookingDateValidationException,
+    RoomNotFound,
+    RoomNotHavefee
     )
 from config import ALLOWED_ORIGINS
 
@@ -48,6 +50,11 @@ def buscar_habitacion(
         raise HTTPException(400, "the check-in date is later than the check-out date")
     except BookingDateValidationException:
         raise HTTPException(400, "the check-in date is lower than today")
+    except Exception:
+        raise HTTPException(
+            503,
+            "El servicio está temporalmente fuera de servicio."
+        )
 
 @app.get("/search/search_cities")
 def search_cities(repo: SearchRepositoryPort = Depends(repo_dep)):
@@ -59,6 +66,25 @@ def search_cities(repo: SearchRepositoryPort = Depends(repo_dep)):
             "El servicio está temporalmente fuera de servicio."
         )
 
+@app.get("/search/detail_room")
+def room_detail(
+    habitacionId: str,
+    checkin: date,
+    checkout: date,
+    repo: SearchRepositoryPort = Depends(repo_dep)
+):
+    try:
+        query = repo.room_detail(habitacionId, checkin, checkout)
+        return query
+    except RoomNotFound:
+        raise HTTPException(404, "El recurso habitación no existe.")
+    except RoomNotHavefee:
+        raise HTTPException(409, "La habitación no puede ser mostrada, no tiene tarifa")
+    except Exception:
+        raise HTTPException(
+            503,
+            "El servicio está temporalmente fuera de servicio."
+        )
 
 @app.get("/search/ping")
 def healthcheck():

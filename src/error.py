@@ -5,3 +5,10 @@ class InvalidDateRangeException(Exception):
 class BookingDateValidationException(Exception):
     """Exception raised when the check-in date is lower than today"""
     pass
+
+class RoomNotFound(Exception):
+    """Exception raised when the room wasnt found."""
+    pass
+
+class RoomNotHavefee(Exception):
+    """Exception raised when the room doesnt have fee."""

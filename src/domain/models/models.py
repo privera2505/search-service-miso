@@ -21,6 +21,23 @@ class HabitacionesDisponibles(BaseModel):
     amenidades: list[str]
     imagenes: list[str]
 
+class HabitacionDetalle(BaseModel):
+    id: str
+    nombre_hotel: str
+    precio: float
+    moneda: str
+    direccion: str
+    capacidad_maxima: int
+    distancia: str
+    acceso: str
+    estrellas: int
+    tipo_habitacion: str
+    tipo_cama: list[str]
+    tamano_habitacion: str
+    amenidades: list[str]
+    imagenes: list[str]
+    latitud: float
+    longitud: float
 
 class Reserva(BaseModel):
     id: str | None = None
