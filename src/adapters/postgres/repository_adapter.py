@@ -1,13 +1,14 @@
 from adapters.postgres.models.models import Base
 from adapters.postgres.declarative_base import db1
 from domain.ports.search_repository_port import SearchRepositoryPort
-from domain.models.models import HabitacionesDisponibles
+from domain.models.models import HabitacionDetalle, HabitacionesDisponibles
 
 from sqlalchemy import func, select, exists
 
 from math import ceil
 
 from adapters.postgres.models.models import Reserva, Hotel, Habitacion, Tarifa, Resena
+from error import RoomNotFound, RoomNotHavefee
 
 
 class InBdSearchRepositoryAdapter(SearchRepositoryPort):
@@ -101,4 +102,61 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
             return [c[0] for c in ciudades]
         finally:
             db.close()
-        return 
+
+    def room_detail(self, id_habitacion, checkin, checkout):
+        db = db1.get_session()
+        try:
+            #Validar habitacion
+            habitacion = (
+                db.query(Habitacion)
+                .filter(Habitacion.id == id_habitacion)
+                .first()
+            )
+            if habitacion is None:
+                raise RoomNotFound
+            
+            #Buscar tarifa vigente
+            tarifa = (
+                db.query(Tarifa)
+                .filter(
+                    Tarifa.habitacionId == id_habitacion,
+                    Tarifa.fechaInicio <= checkin,
+                    Tarifa.fechaFin >= checkout
+                ).first()
+            )
+            if tarifa is None:
+                raise RoomNotHavefee()
+            
+            #Buscar el hotel
+            hotel = (
+                db.query(Hotel)
+                .filter(
+                    Hotel.id == habitacion.hotelId,
+                    Hotel.activo.is_(True)
+                )
+                .first()
+            )
+
+            habitacion_detalle = HabitacionDetalle(
+                id=habitacion.id,
+                nombre_hotel=hotel.nombre,
+                precio=tarifa.precioBase,
+                moneda=tarifa.moneda,
+                direccion=hotel.direccion,
+                capacidad_maxima=habitacion.capacidadMaxima,
+                distancia=hotel.distancia,
+                acceso=hotel.acceso,
+                estrellas=hotel.estrellas,
+                tipo_habitacion=habitacion.tipo_habitacion,
+                tipo_cama=habitacion.tipo_cama,
+                tamano_habitacion=habitacion.tamano_habitacion,
+                amenidades=habitacion.amenidades,
+                imagenes=habitacion.imagenes,
+                latitud=hotel.latitud,
+                longitud=hotel.longitud
+            )
+
+            return habitacion_detalle
+
+        finally:
+            db.close()

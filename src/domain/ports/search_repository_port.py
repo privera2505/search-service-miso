@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import date
 from typing import List, Optional
 
-from domain.models.models import HabitacionesDisponibles 
+from domain.models.models import HabitacionesDisponibles , HabitacionDetalle
 
 
 class SearchRepositoryPort(ABC):
@@ -17,4 +17,9 @@ class SearchRepositoryPort(ABC):
     @abstractmethod
     def search_cities(self) -> list[str]:
         """Returns a list of available cities where you can book a hotel"""
+        pass
+
+    @abstractmethod
+    def room_detail(self, id_habitacion: str, checkin: date, checkout: date) -> HabitacionDetalle:
+        """Return the detail of a room."""
         pass
