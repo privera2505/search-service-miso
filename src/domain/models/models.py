@@ -1,12 +1,22 @@
 from pydantic import BaseModel
 
+from enum import Enum
+
 from datetime import datetime
 
+class Currency(str, Enum):
+    EUR = "EUR"
+    USD = "USD"
+    COP = "COP"
 
 class HabitacionesDisponibles(BaseModel):
     id: str
+    hotelId: str
     nombre_hotel: str
-    precio: float
+    descuento: float
+    subtotal_sin_descuento: float
+    subtotal_con_descuento: float
+    total: float
     moneda: str
     direccion: str
     capacidad_maxima: int
@@ -23,8 +33,12 @@ class HabitacionesDisponibles(BaseModel):
 
 class HabitacionDetalle(BaseModel):
     id: str
+    hotelId: str
     nombre_hotel: str
-    precio: float
+    descuento: float
+    subtotal_sin_descuento: float
+    subtotal_con_descuento: float
+    total: float
     moneda: str
     direccion: str
     capacidad_maxima: int

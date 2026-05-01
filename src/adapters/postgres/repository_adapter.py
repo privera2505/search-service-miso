@@ -5,6 +5,9 @@ from domain.models.models import HabitacionDetalle, HabitacionesDisponibles
 
 from sqlalchemy import func, select, exists
 
+from utils.currency_converter import convert_price
+from utils.prices_calculator import get_prices
+
 from math import ceil
 
 from adapters.postgres.models.models import Reserva, Hotel, Habitacion, Tarifa, Resena
@@ -17,7 +20,7 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
     def __init__(self):
         Base.metadata.create_all(db1.get_engine())
     
-    def search_hotels(self, ciudad, checkin, checkout, group, no_rooms) -> list[HabitacionesDisponibles]:
+    def search_hotels(self, ciudad, checkin, checkout, group, no_rooms, currency) -> list[HabitacionesDisponibles]:
         db = db1.get_session()
         personas_por_habitacion = ceil(group/no_rooms)
         try:
@@ -62,28 +65,41 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                 for r in review_data
             }
 
-            #Transformar al modelo 
-            disponibles: list[HabitacionesDisponibles] = [
-                HabitacionesDisponibles(
-                    id=habitacion.id,
-                    nombre_hotel=hotel.nombre,
-                    precio=tarifa.precioBase * (1 - tarifa.descuento),
-                    moneda=tarifa.moneda,
-                    direccion=hotel.direccion,
-                    capacidad_maxima=habitacion.capacidadMaxima,
-                    distancia=hotel.distancia,
-                    acceso=hotel.acceso,
-                    estrellas=hotel.estrellas,
-                    puntuacion_resena=reviews_map.get(hotel.id, {}).get("promedio", 0),
-                    cantidad_resenas=reviews_map.get(hotel.id, {}).get("cantidad", 0),
-                    tipo_habitacion=habitacion.tipo_habitacion,
-                    tipo_cama=habitacion.tipo_cama,
-                    tamano_habitacion=habitacion.tamano_habitacion,
-                    amenidades=habitacion.amenidades,
-                    imagenes=habitacion.imagenes
+            disponibles: list[HabitacionesDisponibles] = []
+            
+            noches = (checkout - checkin).days
+
+            for habitacion, hotel, tarifa in results:
+                subtotal_sin_descuento_curr_tarifa = tarifa.precioBase * noches
+
+                subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, tarifa.moneda, currency)
+
+                subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, tarifa.descuento, 0.20)
+
+                disponibles.append(
+                    HabitacionesDisponibles(
+                        id=habitacion.id,
+                        hotelId= hotel.id,
+                        nombre_hotel=hotel.nombre,
+                        descuento=tarifa.descuento,
+                        subtotal_sin_descuento=round(subtotal_sin_descuento_curr_query,2),
+                        subtotal_con_descuento= round(subtotal_con_descuento_curr_query,2),
+                        total=round(total_curr_query,2),
+                        moneda=currency,
+                        direccion=hotel.direccion,
+                        capacidad_maxima=habitacion.capacidadMaxima,
+                        distancia=hotel.distancia,
+                        acceso=hotel.acceso,
+                        estrellas=hotel.estrellas,
+                        puntuacion_resena=reviews_map.get(hotel.id, {}).get("promedio", 0),
+                        cantidad_resenas=reviews_map.get(hotel.id, {}).get("cantidad", 0),
+                        tipo_habitacion=habitacion.tipo_habitacion,
+                        tipo_cama=habitacion.tipo_cama,
+                        tamano_habitacion=habitacion.tamano_habitacion,
+                        amenidades=habitacion.amenidades,
+                        imagenes=habitacion.imagenes
+                    )
                 )
-                for habitacion, hotel, tarifa in results
-            ]
 
             return disponibles
 
@@ -103,8 +119,9 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
         finally:
             db.close()
 
-    def room_detail(self, id_habitacion, checkin, checkout):
+    def room_detail(self, id_habitacion, checkin, checkout, currency):
         db = db1.get_session()
+        noches = (checkout - checkin).days
         try:
             #Validar habitacion
             habitacion = (
@@ -137,11 +154,21 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                 .first()
             )
 
+            subtotal_sin_descuento_curr_tarifa = tarifa.precioBase * noches
+
+            subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, tarifa.moneda, currency)
+
+            subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, tarifa.descuento, 0.20)
+
             habitacion_detalle = HabitacionDetalle(
                 id=habitacion.id,
+                hotelId=hotel.id,
                 nombre_hotel=hotel.nombre,
-                precio=tarifa.precioBase,
-                moneda=tarifa.moneda,
+                descuento=tarifa.descuento,
+                subtotal_sin_descuento=round(subtotal_sin_descuento_curr_query,2),
+                subtotal_con_descuento= round(subtotal_con_descuento_curr_query,2),
+                total=round(total_curr_query,2),
+                moneda=currency,
                 direccion=hotel.direccion,
                 capacidad_maxima=habitacion.capacidadMaxima,
                 distancia=hotel.distancia,

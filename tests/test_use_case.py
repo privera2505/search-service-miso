@@ -22,7 +22,8 @@ def test_search_hotels_use_case():
         checkin=checkin,
         checkout=checkout,
         group=group,
-        no_rooms=no_rooms
+        no_rooms=no_rooms,
+        moneda="USD"
     )
 
     assert query is not None
@@ -54,7 +55,7 @@ def test_room_detail_use_case():
     checkin = date(2026, 10, 1)
     checkout = date(2026, 10, 12)
 
-    query = uc.execute(id, checkin, checkout)
+    query = uc.execute(id, checkin, checkout, "USD")
 
     assert query is not None
 
@@ -63,7 +64,7 @@ def test_room_detail_use_case():
     # validar objeto respuesta
     assert hasattr(query, "id")
     assert hasattr(query, "nombre_hotel")
-    assert hasattr(query, "precio")
+    assert hasattr(query, "total")
     assert hasattr(query, "moneda")
     assert hasattr(query, "direccion")
     assert hasattr(query, "capacidad_maxima")

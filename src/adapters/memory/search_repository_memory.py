@@ -5,6 +5,9 @@ from typing import Dict
 from domain.models.models import Reserva, Habitacion, Hotel, HabitacionesDisponibles, Tarifa, Resena, HabitacionDetalle
 from domain.ports.search_repository_port import SearchRepositoryPort
 
+from utils.currency_converter import convert_price
+from utils.prices_calculator import get_prices
+
 from error import RoomNotFound, RoomNotHavefee
 
 
@@ -190,7 +193,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         }
 
 
-    def search_hotels(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int) -> list[HabitacionesDisponibles]:
+    def search_hotels(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int, currency: str) -> list[HabitacionesDisponibles]:
         # 1. Filtrar hoteles por ciudad
         hotels_by_city = [
             hotel
@@ -226,12 +229,17 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             if ocupada:
                 continue
 
-            precio, moneda = self._calculate_price(
+            subtotal_sin_descuento_curr_tarifa, descuento, moneda = self._calculate_price(
                 habitacion["id"], checkin, checkout
             )
 
-            if precio == 0:
+            #Validación para tarifa correcta
+            if subtotal_sin_descuento_curr_tarifa == 0:
                 continue
+
+            subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, moneda, currency)
+
+            subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, descuento, 0.20)
 
             hotel = self._hotel[habitacion["hotelId"]]
 
@@ -240,9 +248,13 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
             habitaciones_disponibles.append(
                 HabitacionesDisponibles(
                     id=habitacion["id"],
+                    hotelId=hotel["id"],
                     nombre_hotel=hotel["nombre"],
-                    precio=precio,
-                    moneda= moneda,
+                    descuento=descuento,
+                    subtotal_sin_descuento=subtotal_sin_descuento_curr_query,
+                    subtotal_con_descuento= subtotal_con_descuento_curr_query,
+                    total=total_curr_query,
+                    moneda= currency,
                     direccion=hotel["direccion"],
                     capacidad_maxima=habitacion["capacidadMaxima"],
                     distancia=hotel["distancia"],
@@ -272,7 +284,7 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
 
         return resultado_final
     
-    def _calculate_price(self, habitacion_id: str, checkin: date, checkout: date) -> float:
+    def _calculate_price(self, habitacion_id: str, checkin: date, checkout: date):
         noches = (checkout - checkin).days
 
         tarifas_validas = [
@@ -284,16 +296,15 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         ]
 
         if not tarifas_validas:
-            return 0.0, "EUR"
+            return 0.0, 0.0, "EUR"
 
         tarifa = tarifas_validas[0]
 
         precio_base = tarifa["precioBase"]
         descuento = tarifa["descuento"]
+        subtotal_sin_descuento = precio_base * noches
 
-        precio_final = precio_base * noches * (1 - descuento)
-
-        return precio_final, tarifa["moneda"]
+        return subtotal_sin_descuento, descuento, tarifa["moneda"]
     
     def _get_reviews_stats(self, hotel_id: str) -> tuple[int, float]:
         resenas = [
@@ -313,26 +324,34 @@ class InMemorySearchRepositoryAdapter(SearchRepositoryPort):
         ciudades = {hotel["ciudad"] for hotel in self._hotel.values()}
         return list(ciudades)
     
-    def room_detail(self, id_habitacion: str, checkin: date, checkout: date):
+    def room_detail(self, id_habitacion: str, checkin: date, checkout: date, currency: str):
         if id_habitacion not in self._habitacion:
             raise RoomNotFound()
         
         habitacion = self._habitacion.get(id_habitacion)
 
-        precio, moneda = self._calculate_price(
+        subtotal_sin_descuento_curr_tarifa, descuento, moneda  = self._calculate_price(
                 habitacion["id"], checkin, checkout
             )
         
-        if precio == 0:
+        if subtotal_sin_descuento_curr_tarifa == 0:
             raise RoomNotHavefee()
+        
+        subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, moneda, currency)
+
+        subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, descuento, 0.20)
 
         hotel = self._hotel.get(habitacion["hotelId"]) 
 
         habitacion_detalle = HabitacionDetalle(
             id=habitacion["id"],
+            hotelId=hotel["id"],
             nombre_hotel=hotel["nombre"],
-            precio=precio,
-            moneda=moneda,
+            descuento=descuento,
+            subtotal_sin_descuento=subtotal_sin_descuento_curr_query,
+            subtotal_con_descuento= subtotal_con_descuento_curr_query,
+            total=total_curr_query,
+            moneda= currency,
             direccion=hotel["direccion"],
             capacidad_maxima=habitacion["capacidadMaxima"],
             distancia=hotel["distancia"],

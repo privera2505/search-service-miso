@@ -10,5 +10,5 @@ class SearchHotelsUseCase(BaseUseCase):
     def __init__(self, search_repository: SearchRepositoryPort):
         self.search_repository = search_repository
     
-    def execute(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int) -> list[HabitacionesDisponibles]:
-        return self.search_repository.search_hotels(ciudad, checkin, checkout, group, no_rooms)
+    def execute(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int, moneda: str) -> list[HabitacionesDisponibles]:
+        return self.search_repository.search_hotels(ciudad, checkin, checkout, group, no_rooms, moneda)

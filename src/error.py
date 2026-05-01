@@ -12,3 +12,7 @@ class RoomNotFound(Exception):
 
 class RoomNotHavefee(Exception):
     """Exception raised when the room doesnt have fee."""
+    pass
+
+class CurrencyNotAllowed(Exception):
+    """Exception raised whent the currency is not allowed."""
