@@ -11,5 +11,5 @@ class RoomDetailUseCase(BaseUseCase):
     def __init__(self, search_repository: SearchRepositoryPort):
         self.search_repository = search_repository
     
-    def execute(self, id_habitacion: str, checkin: date, checkout: date) -> HabitacionDetalle:
-        return self.search_repository.room_detail(id_habitacion, checkin, checkout)
+    def execute(self, id_habitacion: str, checkin: date, checkout: date, moneda: str) -> HabitacionDetalle:
+        return self.search_repository.room_detail(id_habitacion, checkin, checkout, moneda)

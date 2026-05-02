@@ -10,7 +10,7 @@ class SearchRepositoryPort(ABC):
 
     # Done.
     @abstractmethod
-    def search_hotels(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int) -> List[HabitacionesDisponibles]:
+    def search_hotels(self, ciudad: str, checkin: date, checkout: date, group: int, no_rooms: int, moneda: str) -> List[HabitacionesDisponibles]:
         """Returns a list of available hotels with city, checkin, checkout, group and no_romms filter."""
         pass
 
@@ -20,6 +20,6 @@ class SearchRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def room_detail(self, id_habitacion: str, checkin: date, checkout: date) -> HabitacionDetalle:
+    def room_detail(self, id_habitacion: str, checkin: date, checkout: date, moneda: str) -> HabitacionDetalle:
         """Return the detail of a room."""
         pass
