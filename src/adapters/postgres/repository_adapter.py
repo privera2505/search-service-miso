@@ -7,6 +7,7 @@ from sqlalchemy import func, select, exists
 
 from utils.currency_converter import convert_price
 from utils.prices_calculator import get_prices
+from utils.get_fare import TarifaClient
 
 from math import ceil
 
@@ -70,18 +71,21 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
             noches = (checkout - checkin).days
 
             for habitacion, hotel, tarifa in results:
-                subtotal_sin_descuento_curr_tarifa = tarifa.precioBase * noches
 
-                subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, tarifa.moneda, currency)
+                precioBase, moneda, descuento = self._obtener_tarifa(habitacion.id, checkin)
 
-                subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, tarifa.descuento, 0.20)
+                subtotal_sin_descuento_curr_tarifa = precioBase * noches
+
+                subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, moneda, currency)
+
+                subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, descuento, 0.20)
 
                 disponibles.append(
                     HabitacionesDisponibles(
                         id=habitacion.id,
                         hotelId= hotel.id,
                         nombre_hotel=hotel.nombre,
-                        descuento=tarifa.descuento,
+                        descuento=descuento,
                         subtotal_sin_descuento=round(subtotal_sin_descuento_curr_query,2),
                         subtotal_con_descuento= round(subtotal_con_descuento_curr_query,2),
                         total=round(total_curr_query,2),
@@ -133,16 +137,8 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                 raise RoomNotFound
             
             #Buscar tarifa vigente
-            tarifa = (
-                db.query(Tarifa)
-                .filter(
-                    Tarifa.habitacionId == id_habitacion,
-                    Tarifa.fechaInicio <= checkin,
-                    Tarifa.fechaFin >= checkout
-                ).first()
-            )
-            if tarifa is None:
-                raise RoomNotHavefee()
+
+            precioBase, moneda, descuento = self._obtener_tarifa(id_habitacion, checkin)
             
             #Buscar el hotel
             hotel = (
@@ -154,17 +150,17 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
                 .first()
             )
 
-            subtotal_sin_descuento_curr_tarifa = tarifa.precioBase * noches
+            subtotal_sin_descuento_curr_tarifa = precioBase * noches
 
-            subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, tarifa.moneda, currency)
+            subtotal_sin_descuento_curr_query = convert_price(subtotal_sin_descuento_curr_tarifa, moneda, currency)
 
-            subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, tarifa.descuento, 0.20)
+            subtotal_con_descuento_curr_query, total_curr_query = get_prices(subtotal_sin_descuento_curr_query, descuento, 0.20)
 
             habitacion_detalle = HabitacionDetalle(
                 id=habitacion.id,
                 hotelId=hotel.id,
                 nombre_hotel=hotel.nombre,
-                descuento=tarifa.descuento,
+                descuento=descuento,
                 subtotal_sin_descuento=round(subtotal_sin_descuento_curr_query,2),
                 subtotal_con_descuento= round(subtotal_con_descuento_curr_query,2),
                 total=round(total_curr_query,2),
@@ -187,3 +183,16 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
 
         finally:
             db.close()
+
+    def _obtener_tarifa(self, id_habitacion, checkin):
+        tarifa_client = TarifaClient()
+
+        tarifa = tarifa_client.obtener_tarifa_vigente(
+            id_habitacion,
+            checkin
+        )
+
+        if tarifa is None:
+            raise RoomNotHavefee()
+
+        return tarifa["precioBase"], tarifa["moneda"], tarifa["descuento"]
