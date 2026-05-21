@@ -60,15 +60,16 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
             results = (
                 db.query(Habitacion, Hotel)
                 .join(Hotel, Habitacion.hotelId == Hotel.id)
-                .join(
-                    disponibilidad_subquery,
-                    disponibilidad_subquery.c.habitacionId == Habitacion.id
+                .filter(
+                    Habitacion.id.in_(
+                        db.query(disponibilidad_subquery.c.habitacionId)
+                    )
                 )
                 .all()
             )
 
             #Obtener calificaciones por hotel
-            hotels_ids = list({hotel.id for _, hotel in results})
+            hotels_ids = list({row[1].id for row in results})
 
             review_data = (
                 db.query(
@@ -90,7 +91,9 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
 
             disponibles: list[HabitacionesDisponibles] = []
 
-            for habitacion, hotel in results:
+            for row in results:
+                habitacion = row[0]
+                hotel = row[1]
 
                 precioBase, moneda, descuento = self._obtener_tarifa(habitacion.id, checkin)
 
