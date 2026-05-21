@@ -11,7 +11,7 @@ from utils.get_fare import TarifaClient
 
 from math import ceil
 
-from adapters.postgres.models.models import Reserva, Hotel, Habitacion, Tarifa, Resena
+from adapters.postgres.models.models import Reserva, Hotel, Habitacion, Tarifa, Resena, Disponibilidad
 from error import RoomNotFound, RoomNotHavefee
 
 
@@ -25,22 +25,49 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
         db = db1.get_session()
         personas_por_habitacion = ceil(group/no_rooms)
         try:
+            noches = (checkout - checkin).days
+            # Obtener habitación valida del país/ciudad
+            habitaciones_validas_subquery = (
+                db.query(Habitacion.id.label("habitacionId"))
+                .join(Hotel, Habitacion.hotelId == Hotel.id)
+                .filter(
+                    Hotel.ciudad == ciudad,
+                    Hotel.activo == True,
+                    Habitacion.capacidadMaxima >= personas_por_habitacion
+                )
+                .subquery()
+            )
+
+            # Validar disponibilidad
+            disponibilidad_subquery = (
+                db.query(
+                    Disponibilidad.habitacionId
+                )
+                .filter(
+                    Disponibilidad.habitacionId.in_(
+                        db.query(habitaciones_validas_subquery.c.habitacionId)
+                    ),
+                    Disponibilidad.fecha >= checkin,
+                    Disponibilidad.fecha < checkout,
+                    Disponibilidad.unidadesDisponibles > 0
+                )
+                .group_by(Disponibilidad.habitacionId)
+                .having(func.count(func.distinct(Disponibilidad.fecha)) == noches)
+                .subquery()
+            )
+            
             #Query Principal
             results = (
                 db.query(Habitacion, Hotel, Tarifa)
                 .join(Hotel, Habitacion.hotelId == Hotel.id)
                 .join(Tarifa, Tarifa.habitacionId == Habitacion.id)
+                .join(
+                    disponibilidad_subquery,
+                    disponibilidad_subquery.c.habitacionId == Habitacion.id
+                )
                 .filter(
-                    Hotel.ciudad == ciudad,
-                    Hotel.activo == True,
-                    Habitacion.capacidadMaxima >= personas_por_habitacion,
                     Tarifa.fechaInicio <= checkin,
                     Tarifa.fechaFin >= checkout,
-                    ~exists().where(
-                        Reserva.habitacionId == Habitacion.id,
-                        Reserva.fechaCheckIn < checkout,
-                        Reserva.fechaCheckOut > checkin
-                    )
                 )
                 .all()
             )
@@ -67,8 +94,6 @@ class InBdSearchRepositoryAdapter(SearchRepositoryPort):
             }
 
             disponibles: list[HabitacionesDisponibles] = []
-            
-            noches = (checkout - checkin).days
 
             for habitacion, hotel, tarifa in results:
 
